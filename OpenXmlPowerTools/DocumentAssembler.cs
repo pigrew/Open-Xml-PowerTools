@@ -100,6 +100,7 @@ namespace OpenXmlPowerTools
             PA.Repeat,
             PA.EndRepeat,
             PA.Table,
+            PA.BlockContent,
         };
 
         private static object ForceBlockLevelAsAppropriate(XNode node, TemplateError te)
@@ -550,6 +551,20 @@ namespace OpenXmlPowerTools
                                 </xs:schema>",
                         }
                     },
+                    {
+                        PA.BlockContent,
+                        new PASchemaSet() {
+                            XsdMarkup =
+                              @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+                                  <xs:element name='BlockContent'>
+                                    <xs:complexType>
+                                      <xs:attribute name='Select' type='xs:string' use='required' />
+                                      <xs:attribute name='Optional' type='xs:boolean' use='optional' />
+                                    </xs:complexType>
+                                  </xs:element>
+                                </xs:schema>",
+                        }
+                    },
                 };
                 foreach (var item in s_PASchemaSets)
                 {
@@ -584,6 +599,7 @@ namespace OpenXmlPowerTools
             public static XName EndRepeat = "EndRepeat";
             public static XName Conditional = "Conditional";
             public static XName EndConditional = "EndConditional";
+            public static XName BlockContent = "BlockContent";
 
             public static XName Select = "Select";
             public static XName Optional = "Optional";
@@ -610,6 +626,28 @@ namespace OpenXmlPowerTools
             XElement element = node as XElement;
             if (element != null)
             {
+                if(element.Name == PA.BlockContent) {
+                    var xPath = (string)element.Attribute(PA.Select);
+                    var optionalString = (string)element.Attribute(PA.Optional);
+                    bool optional = (optionalString != null && optionalString.ToLower() == "true");
+
+                    object newValue; // may be IEnumerable, string, bool, or double. I expect it to always be an IEnumerable<XObject>
+
+                    try
+                    {
+                        newValue = EvaluateXPath(data, xPath, optional);
+                    }
+                    catch (XPathException e)
+                    {
+                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                    }
+                    if(newValue is XElement) {
+                        var newElement = (XElement)newValue;
+                        return newElement.Nodes();
+                    }
+                    return newValue;
+
+                }
                 if (element.Name == PA.Content)
                 {
                     XElement para = element.Descendants(W.p).FirstOrDefault();
@@ -829,9 +867,14 @@ namespace OpenXmlPowerTools
                         new XElement(W.t, errorMessage)));
             return errorPara;
         }
-
-        private static string EvaluateXPathToString(XElement element, string xPath, bool optional )
-        {
+        /// <summary>
+        /// Find the XML data under an xPath, with some errorhandling to detect non-existing paths or paths that return multiple results.
+        /// </summary>
+        /// <param name="element">Element to search</param>
+        /// <param name="xPath">xPath</param>
+        /// <param name="optional">Return String.Empty if element is not found?</param>
+        /// <returns></returns>
+        private static object EvaluateXPath(XElement element, string xPath, bool optional = false) {
             object xPathSelectResult;
             try
             {
@@ -842,6 +885,37 @@ namespace OpenXmlPowerTools
             }
             catch (XPathException e)
             {
+                throw new XPathException("XPathException: " + e.Message, e);
+            }
+
+            if ((xPathSelectResult is IEnumerable) && !(xPathSelectResult is string))
+            {
+                var selectedData = ((IEnumerable)xPathSelectResult).Cast<XObject>();
+                if (!selectedData.Any())
+                {
+                    if (optional) return String.Empty;
+                    throw new XPathException(string.Format("XPath expression ({0}) returned no results", xPath));
+                }
+                if (selectedData.Count() > 1)
+                {
+                    throw new XPathException(string.Format("XPath expression ({0}) returned more than one node", xPath));
+                }
+
+                XObject selectedDatum = selectedData.First();
+                return selectedDatum;
+            }
+
+            return xPathSelectResult; // if xPath returned a string, bool, or double
+        }
+        private static string EvaluateXPathToString(XElement element, string xPath, bool optional) {
+            object xPathSelectResult;
+            try
+            {
+                //support some cells in the table may not have an xpath expression.
+                if (String.IsNullOrWhiteSpace(xPath)) return String.Empty;
+
+                xPathSelectResult = element.XPathEvaluate(xPath);
+            } catch (XPathException e) {
                 throw new XPathException("XPathException: " + e.Message, e);
             }
 
