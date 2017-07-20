@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Root xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+	<Name>Test</Name>
+	<Block1>
+		<w:p>
+			<w:r>
+				<w:rPr>
+					<w:rStyle w:val="PlaceholderText"/>
+				</w:rPr>
+				<w:t>BlockContentData1</w:t>
+			</w:r>
+		</w:p>		<w:p>
+			<w:r>
+				<w:rPr>
+					<w:rStyle w:val="PlaceholderText"/>
+				</w:rPr>
+				<w:t>BlockContentData2</w:t>
+			</w:r>
+		</w:p>
+	</Block1>
+	<Block2>
+		<w:p>
+			<w:r>
+				<w:rPr>
+					<w:rStyle w:val="PlaceholderText"/>
+				</w:rPr>
+				<w:t>BlockContentData3</w:t>
+			</w:r>
+		</w:p>
+	</Block2>
+	<List>
+		<Item><A>a1</A><B>B1</B></Item>
+		<Item><A>a2</A><B>B2</B></Item>
+		<Item><A>a3</A><B>B3</B></Item>
+	</List>
+</Root>

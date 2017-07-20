@@ -131,6 +131,7 @@ namespace OxPt
         [InlineData("DA264-InvalidRunLevelRepeat.docx", "DA-Data.xml", true)]
         [InlineData("DA265-RunLevelRepeatWithWhiteSpaceBefore.docx", "DA-Data.xml", false)]
         [InlineData("DA266-RunLevelRepeat-NoData.docx", "DA-Data.xml", true)]
+        [InlineData("DA267-BlockContent.docx", "DA-BlockContent.xml", false)]
         
         public void DA101(string name, string data, bool err)
         {
