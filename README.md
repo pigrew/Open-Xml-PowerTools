@@ -1,4 +1,8 @@
-﻿Open-XML-PowerTools
+Working branch
+===============
+This is a fork of the Open XML PowerTools that contains bug fixes, mostly for the DocumentAssembler. I use this as a branch I build into software I write.
+
+Open-XML-PowerTools
 ===================
 The Open XML PowerTools provides guidance and example code for programming with Open XML
 Documents (DOCX, XLSX, and PPTX).  It is based on, and extends the functionality
