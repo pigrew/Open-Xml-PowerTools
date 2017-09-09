@@ -2218,12 +2218,13 @@ namespace OpenXmlPowerTools
                             {
                                 XElement newParagraph = new XElement(W.p,
 #if false
-                                    g.First().BlockLevelContent.ThisBlockContentElement.Attribute(PtOpenXml.Unid),
-#endif
-#if false
-                                    g.Last().BlockLevelContent.ThisBlockContentElement.Attribute(PtOpenXml.Unid),
-#endif
+                                    // previously, this was set to g.First()
+                                    // however, this caused test [InlineData("RP/RP052-Deleted-Para-Mark.docx")] to lose paragraph numbering for a paragraph that we did not want to loose it for.
+                                    // the question is - when coalescing multiple paragraphs due to deleted paragraph marks, should we be taking the paragraph properties from the first or the last
+                                    // in the sequence of coalesced paragraph.  It is possible that we should take Last when accepting revisions, but First when rejecting revisions.
                                     g.First().BlockLevelContent.ThisBlockContentElement.Elements(W.pPr),
+#endif
+                                    g.Last().BlockLevelContent.ThisBlockContentElement.Elements(W.pPr),
                                     g.Select(z => CollapseParagraphTransform(z.BlockLevelContent.ThisBlockContentElement)));
 
                                 // if this contains the last paragraph in the document, and if there is no content,
@@ -2327,12 +2328,22 @@ namespace OpenXmlPowerTools
                 ceName == W.bookmarkEnd ||
                 ceName == W.commentRangeStart ||
                 ceName == W.commentRangeEnd ||
+                ceName == W.customXmlDelRangeStart ||
+                ceName == W.customXmlDelRangeEnd ||
+                ceName == W.customXmlInsRangeStart ||
+                ceName == W.customXmlInsRangeEnd ||
+                ceName == W.customXmlMoveFromRangeStart ||
+                ceName == W.customXmlMoveFromRangeEnd ||
+                ceName == W.customXmlMoveToRangeStart ||
+                ceName == W.customXmlMoveToRangeEnd ||
                 ceName == W.del ||
                 ceName == W.moveFrom ||
                 ceName == W.moveFromRangeStart ||
                 ceName == W.moveFromRangeEnd ||
                 ceName == W.moveToRangeStart ||
                 ceName == W.moveToRangeEnd ||
+                ceName == W.permStart ||
+                ceName == W.permEnd ||
                 ceName == W.proofErr)
                 return false;
 
